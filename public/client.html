@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Websocket Test</title>
+    <link rel="stylesheet" href="dist/quill.snow.css">
+    <style>
+    h1 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 400;
+    }
+    h2 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 300;
+    }
+    h3 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 200;
+    }
+    </style>
+</head>
+<body>
+    <h1>Akasha</h1>
+    <h2>Akashic Records of The Elements</h2>
+    <h3>Your client ID : <span id="client-id"></span></h3>
+    <div id="editor">
+    </div>
+    <script src="dist/quill.js"></script>
+    <script>
+        var clientId = '';
+        var ws = new WebSocket('ws://localhost:9898/');
+        
+        ws.onopen = function() {
+            console.log('Websocket client connected!');
+            ws.send(JSON.stringify({
+                type : 'connect',
+                message : 'Hello, this is your captain speaking.'
+            }));
+        };
+        var editor = new Quill('#editor', {
+            theme : 'snow'
+        });
+
+        editor.on('text-change', function(delta, oldDelta, source) {
+            if (source === 'user') {
+                var obj = {
+                    type : 'text-change',
+                    from : clientId,
+                    oldDelta : oldDelta,
+                    newDelta : delta
+                }
+                ws.send(JSON.stringify(obj));
+            }
+            
+        })
+        ws.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            if (data.type === 'text-change' && data.from !== clientId) {
+                editor.updateContents(data.newDelta.ops);
+            }
+            if (data.type === 'init') {
+                clientId = data.id;
+                document.getElementById('client-id').innerText = clientId;
+                editor.updateContents(data.oldDelta);
+                editor.updateContents(data.newDelta);
+            }
+        };
+    </script>
+</body>
+</html>

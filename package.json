@@ -1,0 +1,14 @@
+{
+  "name": "akasha-simple",
+  "version": "1.0.0",
+  "description": "Simple text collaboration utility build on WebSocket",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Arung Agamani",
+  "license": "MIT",
+  "dependencies": {
+    "websocket": "^1.0.31"
+  }
+}
